@@ -1,2 +1,2 @@
 # UIDynamicAnimatorView
-dynamic animator view
+An UIView subclass that can animate physical simulation.
