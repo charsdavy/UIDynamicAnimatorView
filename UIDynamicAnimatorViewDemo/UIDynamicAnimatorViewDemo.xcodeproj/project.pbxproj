@@ -15,7 +15,7 @@
 		4B2FA7201CD1E34800C840D0 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4B2FA71E1CD1E34800C840D0 /* LaunchScreen.storyboard */; };
 		4B2FA72B1CD1E34800C840D0 /* UIDynamicAnimatorViewDemoTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B2FA72A1CD1E34800C840D0 /* UIDynamicAnimatorViewDemoTests.m */; };
 		4B2FA7361CD1E34800C840D0 /* UIDynamicAnimatorViewDemoUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B2FA7351CD1E34800C840D0 /* UIDynamicAnimatorViewDemoUITests.m */; };
-		4B2FA7471CD1E65600C840D0 /* ZKRDynamicAnimateView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B2FA7461CD1E65600C840D0 /* ZKRDynamicAnimateView.m */; };
+		4B77391F1CDB3332001B1CFF /* ZKRDynamicAnimateView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B77391E1CDB3332001B1CFF /* ZKRDynamicAnimateView.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -52,8 +52,8 @@
 		4B2FA7311CD1E34800C840D0 /* UIDynamicAnimatorViewDemoUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = UIDynamicAnimatorViewDemoUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4B2FA7351CD1E34800C840D0 /* UIDynamicAnimatorViewDemoUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UIDynamicAnimatorViewDemoUITests.m; sourceTree = "<group>"; };
 		4B2FA7371CD1E34800C840D0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		4B2FA7451CD1E65600C840D0 /* ZKRDynamicAnimateView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZKRDynamicAnimateView.h; sourceTree = "<group>"; };
-		4B2FA7461CD1E65600C840D0 /* ZKRDynamicAnimateView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZKRDynamicAnimateView.m; sourceTree = "<group>"; };
+		4B77391D1CDB3332001B1CFF /* ZKRDynamicAnimateView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZKRDynamicAnimateView.h; sourceTree = "<group>"; };
+		4B77391E1CDB3332001B1CFF /* ZKRDynamicAnimateView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZKRDynamicAnimateView.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -104,8 +104,8 @@
 		4B2FA70F1CD1E34800C840D0 /* UIDynamicAnimatorViewDemo */ = {
 			isa = PBXGroup;
 			children = (
-				4B2FA7451CD1E65600C840D0 /* ZKRDynamicAnimateView.h */,
-				4B2FA7461CD1E65600C840D0 /* ZKRDynamicAnimateView.m */,
+				4B77391D1CDB3332001B1CFF /* ZKRDynamicAnimateView.h */,
+				4B77391E1CDB3332001B1CFF /* ZKRDynamicAnimateView.m */,
 				4B2FA7131CD1E34800C840D0 /* AppDelegate.h */,
 				4B2FA7141CD1E34800C840D0 /* AppDelegate.m */,
 				4B2FA7161CD1E34800C840D0 /* ViewController.h */,
@@ -275,7 +275,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4B2FA7471CD1E65600C840D0 /* ZKRDynamicAnimateView.m in Sources */,
+				4B77391F1CDB3332001B1CFF /* ZKRDynamicAnimateView.m in Sources */,
 				4B2FA7181CD1E34800C840D0 /* ViewController.m in Sources */,
 				4B2FA7151CD1E34800C840D0 /* AppDelegate.m in Sources */,
 				4B2FA7121CD1E34800C840D0 /* main.m in Sources */,
@@ -504,6 +504,7 @@
 				4B2FA73C1CD1E34800C840D0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		4B2FA73D1CD1E34800C840D0 /* Build configuration list for PBXNativeTarget "UIDynamicAnimatorViewDemoTests" */ = {
 			isa = XCConfigurationList;
@@ -512,6 +513,7 @@
 				4B2FA73F1CD1E34800C840D0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		4B2FA7401CD1E34800C840D0 /* Build configuration list for PBXNativeTarget "UIDynamicAnimatorViewDemoUITests" */ = {
 			isa = XCConfigurationList;
@@ -520,6 +522,7 @@
 				4B2FA7421CD1E34800C840D0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

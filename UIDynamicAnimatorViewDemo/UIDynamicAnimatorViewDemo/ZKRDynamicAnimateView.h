@@ -10,10 +10,11 @@
 
 @protocol ZKRDynamicAnimateViewDelegate <NSObject>
 
-@required
-/** 仿真动画退出时调用 */
-- (void) dynamicAnimateViewExitTransitionForImageView:(UIImageView *)imageView andMagnitude:(CGFloat)magnitude;
-/** 仿真动画还原时调用 */
+@optional
+/** 仿真动画退出时调用，可添加自定义退场动画。 */
+- (void) dynamicAnimateViewExitTransition;
+
+/** 仿真动画还原时调用，可添加自定义还原效果。 */
 - (void) dynamicAnimateViewRecoverView;
 
 @end
@@ -23,7 +24,7 @@
 @property (nonatomic, weak) id<ZKRDynamicAnimateViewDelegate> delegate;
 @property (nonatomic) UIPanGestureRecognizer *panGestureRecognizer; /** 拖拽手势 */
 
-- (instancetype) initWithImageView:(UIImageView *)imageView andPoint:(CGPoint)touchPoint;
 - (void) dynamicAnimateViewAfterDragGestureEnded:(UIPanGestureRecognizer *)gestureRecognizer;
+- (void) dynamicAnimateViewModifyImageView:(UIImageView *)imageView andOriginalPoint:(CGPoint)point;
 
 @end

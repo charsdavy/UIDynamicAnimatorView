@@ -11,6 +11,7 @@
 
 @interface ViewController ()<ZKRDynamicAnimateViewDelegate>
 
+@property (nonatomic) BOOL isRecoverViewAnimating;
 @property (nonatomic) UIImageView *imageView;
 @property (nonatomic) ZKRDynamicAnimateView *dynamicAnimateView;
 @property (nonatomic) UIPanGestureRecognizer *panGestureRecognizer;
@@ -38,10 +39,11 @@
     [self.view addSubview:imageView];
 }
 
-- (void)initDynamicAnimateViewWithTouchPoint:(CGPoint)touchPoint
+- (void)initDynamicAnimateView
 {
-    _dynamicAnimateView = [[ZKRDynamicAnimateView alloc] initWithImageView:_imageView andPoint:touchPoint];
+    _dynamicAnimateView = [[ZKRDynamicAnimateView alloc] init];
     _dynamicAnimateView.delegate = self;
+    [self.view layoutIfNeeded];
     [self.view addSubview:_dynamicAnimateView];
 }
 
@@ -53,11 +55,22 @@
 
 - (void) handlePanGesture:(UIPanGestureRecognizer *)gestureRecognizer
 {
-    if (UIGestureRecognizerStateBegan == gestureRecognizer.state) {
-        [self initDynamicAnimateViewWithTouchPoint:[gestureRecognizer locationInView:self.view]];
+    CGPoint touch = [gestureRecognizer locationInView:self.view];
+    // 图片宽度大于设备屏幕宽度的图片不再响应旋转拖拽操作
+    if (_dynamicAnimateView.frame.size.width > [UIScreen mainScreen].bounds.size.width) {
+        return;
+    }
+    if (UIGestureRecognizerStateBegan == gestureRecognizer.state && !_isRecoverViewAnimating) {
+        [self initDynamicAnimateView];
+        _isRecoverViewAnimating = YES;
+        [_dynamicAnimateView dynamicAnimateViewModifyImageView:_imageView andOriginalPoint:touch];
     } else if (UIGestureRecognizerStateChanged == gestureRecognizer.state) {
-        self.dynamicAnimateView.panGestureRecognizer = gestureRecognizer;
+        if (_isRecoverViewAnimating) {
+            self.dynamicAnimateView.panGestureRecognizer = gestureRecognizer;
+        }
     } else if (UIGestureRecognizerStateEnded == gestureRecognizer.state) {
+        _dynamicAnimateView.userInteractionEnabled = YES;
+        _panGestureRecognizer.enabled = NO;
         [_dynamicAnimateView dynamicAnimateViewAfterDragGestureEnded:gestureRecognizer];
     }
 }
@@ -71,11 +84,15 @@
     [UIView animateWithDuration:duration animations:^{
         imageView.alpha = 0;
     }];
+    _panGestureRecognizer.enabled = YES;
+    _isRecoverViewAnimating = NO;
 }
 
 - (void)dynamicAnimateViewRecoverView
 {
     [self.dynamicAnimateView removeFromSuperview];
+    _panGestureRecognizer.enabled = YES;
+    _isRecoverViewAnimating = NO;
 }
 
 - (void)didReceiveMemoryWarning {

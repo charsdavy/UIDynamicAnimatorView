@@ -8,31 +8,28 @@
 
 #import "ZKRDynamicAnimateView.h"
 
-@interface ZKRDynamicAnimateView ()
+@interface ZKRDynamicAnimateView ()<UICollisionBehaviorDelegate>
 {
     CGRect _originalBounds;
     CGPoint _originalCenter;
-    UIOffset _panMaxOffset;
     CGPoint _originalTouchPoint;
 }
 
 @property (nonatomic) UIImageView *srcImageView; /** 要进行动态动画的源图片视图 */
 @property (nonatomic) UIDynamicAnimator *animator; /**  仿真者  */
 @property (nonatomic) UIAttachmentBehavior *attachment; /** 吸附仿真 */
-@property (nonatomic) UIGravityBehavior *gravity; /** 重力仿真 */
+@property (nonatomic) UICollisionBehavior *collisionBehavior; /** 碰撞仿真 */
+@property (nonatomic) UIPushBehavior *pushBehavior; /** 平移仿真 */
 @property (nonatomic) UIImageView *dynamicView; /** 当前操作图片视图 */
 
 @end
 
 @implementation ZKRDynamicAnimateView
 
-- (instancetype)initWithImageView:(UIImageView *)imageView andPoint:(CGPoint)touchPoint
+- (instancetype)init
 {
     self = [super initWithFrame:[UIScreen mainScreen].bounds];
     if (self) {
-        self.srcImageView = imageView;
-        _originalTouchPoint = touchPoint;
-        [self prepareAnimator];
     }
     return self;
 }
@@ -40,85 +37,85 @@
 - (void) prepareAnimator
 {
     _animator = [[UIDynamicAnimator alloc] initWithReferenceView:self];
-    // 添加手势操作视图
     _dynamicView = [[UIImageView alloc] init];
     [self addSubview:_dynamicView];
-    _gravity = [[UIGravityBehavior alloc] initWithItems:@[_dynamicView]];
-    // 设置重力的方向和大小
-    _gravity.gravityDirection = CGVectorMake(0, 5);
     
-    [self handleDynamicViewForGestureRecognizer:nil];
-    [self initAttachmentBehaviourWithGestureRecognizer:nil];
-    [_animator addBehavior:_gravity];
-    [_animator addBehavior:_attachment];
+    [self handleDynamicView];
+    [self setupAttachmentBehaviourWithAnchorPosition:_originalTouchPoint];
+}
+
+- (void)dynamicAnimateViewModifyImageView:(UIImageView *)imageView andOriginalPoint:(CGPoint)point
+{
+    _srcImageView = imageView;
+    _originalTouchPoint = point;
+    [self prepareAnimator];
 }
 
 - (void)setPanGestureRecognizer:(UIPanGestureRecognizer *)panGestureRecognizer
 {
-    [self calculateMaxPanOffsetForPoint:[panGestureRecognizer locationInView:self] andOtherPoint:_originalTouchPoint];
     [_attachment setAnchorPoint:[panGestureRecognizer locationInView:self]];
-    _dynamicView.hidden = NO;
-    self.srcImageView.hidden = YES;
 }
 
-- (void)handleDynamicViewForGestureRecognizer:(UIPanGestureRecognizer *)gestureRecognizer
+- (void)handleDynamicView
 {
-    self.srcImageView.hidden = YES;
+    _srcImageView.hidden = YES;
     _dynamicView.hidden = NO;
-    _dynamicView.frame = self.srcImageView.frame;
-    _dynamicView.image = self.srcImageView.image;
-    _originalBounds = CGRectMake(0, 0, self.srcImageView.frame.size.width, self.srcImageView.frame.size.height);
-    _originalCenter = self.srcImageView.center;
+    _dynamicView.frame = _srcImageView.frame;
+    _dynamicView.image = _srcImageView.image;
+    _originalBounds = CGRectMake(0, 0, _srcImageView.frame.size.width, _srcImageView.frame.size.height);
+    _originalCenter = _srcImageView.center;
 }
 
-- (void)initAttachmentBehaviourWithGestureRecognizer:(UIPanGestureRecognizer *)gestureRecognizer
+- (void)setupAttachmentBehaviourWithAnchorPosition:(CGPoint)anchorPosition
 {
-    CGPoint anchorPosition = _originalTouchPoint;
     UIOffset offset = UIOffsetMake(anchorPosition.x - _dynamicView.center.x, anchorPosition.y - _dynamicView.center.y);
+    if (_attachment && _animator) {
+        [_animator removeBehavior:_attachment];
+    }
     _attachment = [[UIAttachmentBehavior alloc] initWithItem:_dynamicView offsetFromCenter:offset attachedToAnchor:anchorPosition];
+    [_animator addBehavior:_attachment];
 }
 
 - (void)dynamicAnimateViewAfterDragGestureEnded:(UIPanGestureRecognizer *)gestureRecognizer
 {
+    CGPoint velocity = [gestureRecognizer velocityInView:self];
+    velocity = CGPointMake(velocity.x / 30, velocity.y / 30);
+    CGFloat magnitude = (CGFloat)sqrt(pow((double)velocity.x, 2.0) + pow((double)velocity.y, 2.0));
+    CGPoint p = [gestureRecognizer locationInView:self];
+
     [_animator removeAllBehaviors];
     
-    if ([self hasRecoverForPanOffset:_panMaxOffset]) {
+    if ([self hasRecoverForMagnitude:magnitude]) {
         [self recoverDynamicView];
         return ;
     }
     
-    UIPushBehavior *pushBehavior = [[UIPushBehavior alloc] initWithItems:@[_dynamicView] mode:UIPushBehaviorModeInstantaneous];
-    CGPoint velocity = [gestureRecognizer velocityInView:self];
-    CGPoint currentPoint = [gestureRecognizer locationInView:self];
-    CGPoint offset = CGPointMake(currentPoint.x - _originalTouchPoint.x, currentPoint.y - _originalTouchPoint.y);
-    CGFloat angle = atan2(offset.y, offset.x);
-    CGFloat magnitude = sqrtf((velocity.x * velocity.x) + (velocity.y * velocity.y));
-    // 设置推动的大小、角度、推力方向
-    pushBehavior.magnitude = magnitude / 10.0f;
-    pushBehavior.angle = angle;
-    pushBehavior.pushDirection = CGVectorMake((velocity.x / 10) , (velocity.y / 10));
-    // 使单次推行为有效
-    pushBehavior.active = YES;
-    [_animator addBehavior:pushBehavior];
-    // 退场
-    if ([_delegate respondsToSelector:@selector(dynamicAnimateViewExitTransitionForImageView:andMagnitude:)]) {
-        [_delegate dynamicAnimateViewExitTransitionForImageView:_dynamicView andMagnitude:magnitude];
+    _collisionBehavior = [[UICollisionBehavior alloc] initWithItems:@[_dynamicView]];
+    _collisionBehavior.collisionDelegate = self;
+    CGFloat diagonal = -sqrt(pow(CGRectGetWidth(_dynamicView.frame), 2.0) + pow(CGRectGetHeight(_dynamicView.frame), 2.0));
+    UIEdgeInsets insets = UIEdgeInsetsMake(diagonal, diagonal, diagonal, diagonal);
+    [_collisionBehavior setTranslatesReferenceBoundsIntoBoundaryWithInsets:insets];
+    [_animator addBehavior:_collisionBehavior];
+    
+    _pushBehavior = [[UIPushBehavior alloc] initWithItems:@[_dynamicView] mode:UIPushBehaviorModeInstantaneous];
+    CGPoint center = _dynamicView.center;
+    UIOffset offset = UIOffsetMake((p.x - center.x) / 2.0, (p.y - center.y) / 2.0);
+    [_pushBehavior setTargetOffsetFromCenter:offset forItem:_dynamicView];
+    _pushBehavior.pushDirection = CGVectorMake(velocity.x, velocity.y);
+    [_animator addBehavior:_pushBehavior];
+}
+
+- (void)exitTransition
+{
+    if ([_delegate respondsToSelector:@selector(dynamicAnimateViewExitTransition)]) {
+        [_delegate dynamicAnimateViewExitTransition];
     }
 }
 
-- (void)calculateMaxPanOffsetForPoint:(CGPoint)point andOtherPoint:(CGPoint)otherPoint
+/** 根据加速度的级别值判断图片是否返回原来的位置 */
+- (BOOL)hasRecoverForMagnitude:(CGFloat)magnitude
 {
-    UIOffset offset = UIOffsetMake(fabs(point.x - otherPoint.x), fabs(point.y - otherPoint.y));
-    if (_panMaxOffset.horizontal < offset.horizontal || _panMaxOffset.vertical < offset.vertical) {
-        _panMaxOffset = offset;
-    }
-}
-
-/** 根据偏移值判断图片是否返回原来的位置 */
-- (BOOL)hasRecoverForPanOffset:(UIOffset)offset
-{
-    CGSize viewSize = self.frame.size;
-    if (offset.horizontal < viewSize.width / 4 && offset.vertical < viewSize.height / 5) {
+    if (magnitude < 30) {
         return YES;
     }
     return NO;
@@ -132,12 +129,23 @@
         _dynamicView.center = _originalCenter;
         _dynamicView.transform = CGAffineTransformIdentity;
     } completion:^(BOOL finished) {
-        self.srcImageView.hidden = NO;
+        _srcImageView.hidden = NO;
         _dynamicView.hidden = YES;
         if ([_delegate respondsToSelector:@selector(dynamicAnimateViewRecoverView)]) {
             [_delegate dynamicAnimateViewRecoverView];
         }
     }];
+}
+
+#pragma mark - UICollisionBehaviorDelegate
+
+- (void)collisionBehavior:(UICollisionBehavior *)behavior beganContactForItem:(id<UIDynamicItem>)item withBoundaryIdentifier:(id<NSCopying>)identifier atPoint:(CGPoint)p
+{
+    [_animator removeAllBehaviors];
+    _pushBehavior = nil;
+    _collisionBehavior = nil;
+    _dynamicView.hidden = YES;
+    [self exitTransition];
 }
 
 @end
