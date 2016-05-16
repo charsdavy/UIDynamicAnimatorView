@@ -66,7 +66,7 @@
         [_dynamicAnimateView dynamicAnimateViewModifyImageView:_imageView andOriginalPoint:touch];
     } else if (UIGestureRecognizerStateChanged == gestureRecognizer.state) {
         if (_isRecoverViewAnimating) {
-            self.dynamicAnimateView.panGestureRecognizer = gestureRecognizer;
+            self.dynamicAnimateView.currentAnchorPoint = [gestureRecognizer locationInView:self.view];
         }
     } else if (UIGestureRecognizerStateEnded == gestureRecognizer.state) {
         _dynamicAnimateView.userInteractionEnabled = YES;
