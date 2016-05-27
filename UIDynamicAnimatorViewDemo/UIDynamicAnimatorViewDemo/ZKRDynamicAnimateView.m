@@ -54,11 +54,17 @@
     [self setupAttachmentBehaviourWithAnchorPosition:_originalTouchPoint];
 }
 
-- (void)dynamicAnimateViewModifyImageView:(UIImageView *)imageView andOriginalPoint:(CGPoint)point
+- (BOOL)dynamicAnimateViewModifyImageView:(UIImageView *)imageView andOriginalPoint:(CGPoint)point
 {
-    _srcImageView = imageView;
-    _originalTouchPoint = point;
-    [self prepareAnimator];
+    if ([_delegate respondsToSelector:@selector(dynamicAnimateViewCanExecAnimate:)]) {
+        if ([_delegate dynamicAnimateViewCanExecAnimate:self]) {
+            _srcImageView = imageView;
+            _originalTouchPoint = point;
+            [self prepareAnimator];
+            return YES;
+        }
+    }
+    return NO;
 }
 
 - (void)setCurrentAnchorPoint:(CGPoint)currentAnchorPoint
@@ -98,7 +104,6 @@
         return;
     }
     
-    CGPoint p = [gestureRecognizer locationInView:self];
     CGSize dynamicViewSize = _dynamicView.frame.size;
     // 计算出图片的斜边距离作为碰撞检测的边界距离. 用勾股定理计算斜边长.
     CGFloat edge = sqrt(pow(dynamicViewSize.width, 2.0) + pow(dynamicViewSize.height, 2.0));
@@ -106,8 +111,9 @@
     _collisionBehavior = [[UICollisionBehavior alloc] initWithItems:@[_dynamicView]];
     _collisionBehavior.collisionDelegate = self;
     [_collisionBehavior setTranslatesReferenceBoundsIntoBoundaryWithInsets:insets];
-    [_animator addBehavior:_collisionBehavior];    
+    [_animator addBehavior:_collisionBehavior];
     
+    CGPoint p = [gestureRecognizer locationInView:self];
     CGPoint center = _dynamicView.center;
     UIOffset offset = UIOffsetMake(p.x - center.x, p.y - center.y);
     CGFloat delta = DEFAULT_SCALE - magnitude / MAGNITUDE_SCALE - edge / EDGE_SCALE;
@@ -129,8 +135,8 @@
     _collisionBehavior = nil;
     _dynamicView.hidden = YES;
     
-    if ([_delegate respondsToSelector:@selector(dynamicAnimateViewExitTransition)]) {
-        [_delegate dynamicAnimateViewExitTransition];
+    if ([_delegate respondsToSelector:@selector(dynamicAnimateViewExitTransition:)]) {
+        [_delegate dynamicAnimateViewExitTransition:self];
     }
 }
 
@@ -153,8 +159,8 @@
     } completion:^(BOOL finished) {
         _srcImageView.hidden = NO;
         _dynamicView.hidden = YES;
-        if ([_delegate respondsToSelector:@selector(dynamicAnimateViewRecoverView)]) {
-            [_delegate dynamicAnimateViewRecoverView];
+        if ([_delegate respondsToSelector:@selector(dynamicAnimateViewRecoverView:)]) {
+            [_delegate dynamicAnimateViewRecoverView:self];
         }
     }];
 }

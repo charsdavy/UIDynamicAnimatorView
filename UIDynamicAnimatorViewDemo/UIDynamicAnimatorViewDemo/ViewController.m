@@ -76,23 +76,26 @@
 }
 
 #pragma mark - ZKRDynamicAnimateViewDelegate
-- (void)dynamicAnimateViewExitTransitionForImageView:(UIImageView *)imageView andMagnitude:(CGFloat)magnitude
+- (void)dynamicAnimateViewExitTransition:(ZKRDynamicAnimateView *)dynamicAnimateView;
 {
-    CGFloat duration = 0.4 - magnitude / 1000.0f;
-    duration = duration > 0.15f ? duration : 0.15f;
-    
-    [UIView animateWithDuration:duration animations:^{
-        imageView.alpha = 0;
-    }];
     _panGestureRecognizer.enabled = YES;
     _isRecoverViewAnimating = NO;
 }
 
-- (void)dynamicAnimateViewRecoverView
+- (void)dynamicAnimateViewRecoverView:(ZKRDynamicAnimateView *)dynamicAnimateView
 {
     [self.dynamicAnimateView removeFromSuperview];
     _panGestureRecognizer.enabled = YES;
     _isRecoverViewAnimating = NO;
+}
+
+- (BOOL)dynamicAnimateViewCanExecAnimate:(ZKRDynamicAnimateView *)dynamicAnimateView
+{
+    CGRect frame = _imageView.frame;
+    if (!CGRectIsEmpty(frame)) {
+        return YES;
+    }
+    return NO;
 }
 
 - (void)didReceiveMemoryWarning {
